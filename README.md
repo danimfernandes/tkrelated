@@ -12,6 +12,7 @@ Copyright (c) Daniel Fernandes - dani.mag.fernandes@gmail.com
     
     For more details on this license, see http://www.gnu.org/licenses/
 ***
+
 ###Citation
 Fernandes DM, Sirak K, Novak M, Finarelli J, Byrne J, Connolly E, Carlsson J, Ferretti E, Pinhasi R, Carlsson J. 2016.
 The Identification of a 1916 Irish Rebel: New Approach for Estimating Relatedness From Low Coverage Homozygous Genomes.
