@@ -28,7 +28,7 @@ This R script is composed by 9 different functions that can be used to:
   * c) half siblings (Queller and Goodnight's Rxy coefficient of relationship = 25%)
 2. manipulate SNP data in non-binary PLINK format to be used for relatedness estimations
 
-The main advantage of this script is the requirement of low amounts of genetic data for accurate estimations. This is possible due to the application of a "forced homozygous" approach, and has been shown to work with as few as 1400 common SNPs. It can be used for both forensic or archaeological applications, where reduced DNA amounts are frequently an issue. More information on the paper where this method was first applied: [doi: 10.XXXX/XXXXXX](https://doi.org/10.XXXX/XXXXX)
+The main advantage of this script is the requirement of low amounts of genetic data for accurate estimations. This is possible due to the application of a "forced homozygous" approach, and has been shown to work with as few as 1400 common SNPs. It can be used for both forensic or archaeological applications, where reduced DNA amounts are frequently an issue. More information on the paper where this method was first applied: [doi:10.1101/076992 ](http://dx.doi.org/10.1101/076992)
 ***
 
 ###Third-Party Software Requirements
