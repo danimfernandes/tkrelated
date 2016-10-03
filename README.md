@@ -53,6 +53,7 @@ More detailed input requirements and formats are described within the script.
 ####Example:
 ####Estimating relatedness on two given samples
 For comparing two individuals one should start by having their PLINK files and an appropriate file with the allele frequencies. For this example, we will say that those frequencies were extracted from a PLINK file from the 1000 Genomes Project.
+As a note, too large samples will either crash SPAGeDI or take too much time to complete. It is suggested to use the PLINK command *thin* to reduce the sample to desired, smaller, sizes (recommended between 50 and 100K SNPs).
 
     ind1.ped
     ind1.map
@@ -65,7 +66,7 @@ For comparing two individuals one should start by having their PLINK files and a
     1000genomes_European.fam
     1000genomes_allele_frequencies_European.frq
 
-Use **relatedHomozSNP** function (line 605) to convert the PLINK data into SPAGeDI format.
+Use **relatedHomozSNP** function to convert the PLINK data into SPAGeDI format.
 
     relatedHomozSNP(sample1="ind1",sample2="ind2",freqs="1000genomes_allele_frequencies_European.frq",run.spagedi=TRUE)
 
