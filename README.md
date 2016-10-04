@@ -47,10 +47,10 @@ The main advantage of this script is the requirement of low amounts of genetic d
 ***
 
 ###Usage and Data Requirements
-TKrelated requires individual data and allele frequencies both in non-binary PLINK format (*.ped/*.map and *.frq). Each PED file can only contain one individual.
+TKrelated requires individual data and allele frequencies both in non-binary PLINK format (.ped/.map and .frq). Each PED file can only contain one individual.
 More detailed input requirements and formats are described within the script.
 
-####Example:
+####Example (v1.3):
 ####Estimating relatedness on two given samples
 For comparing two individuals one should start by having their PLINK files and an appropriate file with the allele frequencies. For this example, we will say that those frequencies were extracted from a PLINK file from the 1000 Genomes Project.
 As a note, too large samples will either crash SPAGeDI or take too much time to complete. It is suggested to use the PLINK command *thin* to reduce the sample to desired, smaller, sizes (recommended between 50 and 100K SNPs).
@@ -92,21 +92,11 @@ Due to the "forced homozygous" approach, the coefficients are expected to be the
 ####Estimating relatedness on virtual individuals
 At this point, one can use the frequencies of the common SNPs between the two samples to generate virtual individuals and simulate different degrees of relatedness. This way one can confirm the ranges for which the found coefficient of relatedness can vary, and/or assess if it lands on an interval where different relatedness coefficients overlap.
 
-To do this, it is possible to use the generated SPAGeDI frequencies file to extract the frequencies of those specific SNPs from two different sources:
+The function **relatedHomozSNP** outputs two extra files: one with the ID of the common SNPs, and another with their frequencies in .frq format. This last one should be used for the next steps.
 
-Any dataset, in this case, the original dataset: *1000genomes_European*:
+    commons_freqs_ind1_ind2.frq
 
-    freqCommonSNPsAnyDataset(spagedi.freq.file="ind1_ind2_spagedi_frequencies.txt",dataset="1000genomes_European")
-
-The same PLINK frequencies file used for the relatedness estimation (suggested use):
-
-    freqCommonSNPsSameFreqFile(spagedi.freq.file="ind1_ind2_spagedi_frequencies.txt",plink.freq.file="1000genomes_allele_frequencies_European.frq")
-
-The output of these functions is a new PLINK frequencies file:
-
-    common_freqs_ind1_ind2.frq
-
-This file can now be used to generate the virtual relatedness tests. For each of the three coefficients, 0, 25 and 50%, there are two functions. The first one generates the individuals and estimates their relatedness, and the second plots the corresponding histograms.
+For each of the three coefficients, 0, 25 and 50%, there are two functions. The first one generates the individuals and estimates their relatedness, and the second compiles the data from the previous and plots the corresponding histograms.
 
     unrelatedfunc = function(file,samples.tag,numUnrelatedPairs,identifier,run.spagedi=TRUE,reduce.SNPs=FALSE)
     unrelatedplot = function(samples.tag)
@@ -120,14 +110,30 @@ This file can now be used to generate the virtual relatedness tests. For each of
 A detailed description of each argument exists within the function.
 
 Below is a suggested set of commands to run the simulations, taking into consideration that SPAGeDI can become unstable due to memory issues.
+ 
+    unrelatedfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,1,run.spagedi = TRUE)
+    unrelatedfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,2,run.spagedi = TRUE)
+    unrelatedfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,3,run.spagedi = TRUE)
+    unrelatedfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,4,run.spagedi = TRUE)
+    unrelatedfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,5,run.spagedi = TRUE)
+    unrelatedplot("ind1_ind2")
+    fullsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,1,run.spagedi = TRUE)
+    fullsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,2,run.spagedi = TRUE)
+    fullsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,3,run.spagedi = TRUE)
+    fullsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,4,run.spagedi = TRUE)
+    fullsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,5,run.spagedi = TRUE)
+    fullsibsplot("ind1_ind2")
+    halfsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,1,run.spagedi = TRUE)
+    halfsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,2,run.spagedi = TRUE)
+    halfsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,3,run.spagedi = TRUE)
+    halfsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,4,run.spagedi = TRUE)
+    halfsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,5,run.spagedi = TRUE)
+    halfsibsplot("ind1_ind2")
+    plotAll("ind1_ind2")
 
-    unrelatedfunc("common_freqs_ind1_ind2.frq","ind1ind2",250,1,run.spagedi = TRUE,reduce.SNPs = FALSE)
-    unrelatedfunc("common_freqs_ind1_ind2.frq","ind1ind2",250,2,run.spagedi = TRUE,reduce.SNPs = FALSE)
-    unrelatedfunc("common_freqs_ind1_ind2.frq","ind1ind2",250,3,run.spagedi = TRUE,reduce.SNPs = FALSE)
-    unrelatedfunc("common_freqs_ind1_ind2.frq","ind1ind2",250,4,run.spagedi = TRUE,reduce.SNPs = FALSE)
-    unrelatedplot("ind1ind2")
+This will generate estimations for 1000 unrelated virtual individuals, in batches of 200. This way the script and SPAGeDI run faster and should not crash. It, however, is dependant on the amount of RAM available.
 
-This will generate estimations for 1000 unrelated virtual individuals, in batches of 250. This way the script and SPAGeDI run faster and should not crash. It, however, is dependant on the amount of RAM available. The plotting function will recognize and load all four files with the specified *samples.tag*.
+The **plotAll** function will recognize the data from the three different orders and plot them together. Note that this function requires the previous three plot functions to have run.
 
 ***
 
