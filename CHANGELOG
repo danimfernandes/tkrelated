@@ -1,0 +1,16 @@
+v.1.3 (7 Oct 2016)
+* Solved bug for when a position has more than one SNP identified to it
+* Removed freqcommonSNPs functions and incorporated them in relatedHomozSNP
+* Added function to plot all simulations and coefficient of relatedness
+* Added forced homozigosity step for when using heterozygous samples
+* Added example commands at end of document
+
+v1.2 (29 Sep 2016)
+* Removed and incorporated SNP freq retrieving functions into main functions
+
+v1.1 (26 Sep 2016)
+* Added "plotAll" function to plot
+* Added function to retrieve SNP frequencies from same frequencies file
+
+v.1.0 (22 Jun 2016)
+* Turned into functions-based script
