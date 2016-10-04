@@ -131,7 +131,7 @@ Below is a suggested set of commands to run the simulations, taking into conside
     halfsibsplot("ind1_ind2")
     plotAll("ind1_ind2")
 
-This will generate estimations for 1000 unrelated virtual individuals, in batches of 200. This way the script and SPAGeDI run faster and should not crash. It, however, is dependant on the amount of RAM available.
+This will generate estimations for 1000 unrelated, 1000 first order, and 1000 second order virtual individuals, in batches of 200. This way the script and SPAGeDI run faster and should not crash. It, however, is dependant on the amount of RAM available.
 
 The **plotAll** function will recognize the data from the three different orders and plot them together. Note that this function requires the previous three plot functions to have run.
 
