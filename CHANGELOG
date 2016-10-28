@@ -1,3 +1,8 @@
+v.1.4 (28 Oct 2016)
+* Added three/quarter-sibling simulations
+* Added third order simulations
+* Removed overlap circles
+
 v.1.3 (7 Oct 2016)
 * Solved bug for when a position has more than one SNP identified to it
 * Removed freqcommonSNPs functions and incorporated them in relatedHomozSNP
