@@ -4,6 +4,7 @@
 
 ## Contact: Daniel Fernandes - dani.mag.fernandes@gmail.com
 ## github.com/danimag/tkrelated
+## Please cite as:
 ## "The Identification of a 1916 Irish Rebel: New Approach for Estimating Relatedness From Low Coverage Homozygous Genomes"
 ## 2016
 ## http://dx.doi.org/10.1101/076992
