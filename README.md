@@ -152,7 +152,7 @@ Below is a suggested set of commands to run the simulations, taking into conside
 
 This will generate estimations for 1000 unrelated, 1000 first order, 1000 3/4 siblings, 1000 second order, and 1000 third order virtual individuals, in batches of 200. This way the script and SPAGeDI run faster and should not crash. It, however, is dependant on the amount of RAM available.
 
-The **readAll** function will recognize the data from the five different orders and plot them together. Note that this function requires the previous three plot functions to have run.
+The **readAll** function will recognize the data from the five different orders and plot them together. Note that this function requires the previous five plot functions to have run.
 
 ***
 
