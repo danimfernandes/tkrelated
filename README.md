@@ -53,6 +53,10 @@ More detailed input requirements and formats are described within the script.
 
 ####Example (v1.4):
 ####Estimating relatedness on two given samples
+We suggest using this script by sourcing it into your current R session environment. All functions will then be available to the user:
+
+    source("/path/to/script/TKrelated_vx.x.x.R")
+
 For comparing two individuals one should start by having their PLINK files and an appropriate file with the allele frequencies. For this example, we will say that those frequencies were extracted from a PLINK file from the 1000 Genomes Project.
 As a note, too large samples will either crash SPAGeDI or take too much time to complete. It is suggested to use the PLINK command *thin* to reduce the sample to desired, smaller, sizes (recommended between 50 and 100K SNPs).
 
