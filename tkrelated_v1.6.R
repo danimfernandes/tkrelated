@@ -1304,7 +1304,7 @@ firstcousplot = function(samples.tag) {
   
   write.table(firstcous,paste0("histoFC_",samples.tag,"Distances_Final"),quote = FALSE,row.names = FALSE,col.names = FALSE)
   xlimitsFS=c(min(firstcous)-0.05,max(firstcous)+0.05)
-  hist(firstcous,col = "orangered",breaks=25,xlab="Relatedness Coefficient",xlim=xlimitsFS,ylab=paste0("N=",length(firstcous)), main=paste0("First-&-Half Order for ",samples.tag))
+  hist(firstcous,col = "orangered",breaks=25,xlab="Relatedness Coefficient",xlim=xlimitsFS,ylab=paste0("N=",length(firstcous)), main=paste0("Third Order for ",samples.tag))
 }
 
 ######################## REAL ALL ESTIMATIONS ###################
