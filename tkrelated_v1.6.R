@@ -17,7 +17,6 @@
 ##    Fixed bug due to presence of fixed alleles
 
 ##TODO:
-##    Since finding common allele's frequencies is the most time consuming task, add option to use plink to reduce the original dataset to the specific set of common SNPs and use those frequencies directly
 ##    Long-Term: Port to python
 
 
