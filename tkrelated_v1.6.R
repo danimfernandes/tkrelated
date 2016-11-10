@@ -1,8 +1,9 @@
 ## TKrelated & CybRsex
-## v.1.4
-## 28 October 2016
+## v.1.6
+## 10 November 2016
 
-## Contact: Daniel Fernandes - dani.mag.fernandes@gmail.com
+## Maintained by: Daniel Fernandes - dani.mag.fernandes@gmail.com
+## Written by Daniel Fernandes (main body, simulations) and John Finarelli (posterior probabilities)
 ## github.com/danimag/tkrelated
 ## Please cite as:
 ## "The Identification of a 1916 Irish Rebel: New Approach for Estimating Relatedness From Low Coverage Homozygous Genomes"
@@ -10,16 +11,17 @@
 ## http://dx.doi.org/10.1101/076992
 
 ##CHANGELOG:
-##    Added three/quarter-sibling simulations
-##    Added third order simulations
-##    Removed overlap circles
+##    Added posterior probabilities
+##    Multiple speed improvements on "relatedHomozSNP" function (up to 24X faster)
+##    Fixed bug for "reduce.SNPs"=FALSE
+##    Fixed bug due to presence of fixed alleles
 
 ##TODO:
 ##    Since finding common allele's frequencies is the most time consuming task, add option to use plink to reduce the original dataset to the specific set of common SNPs and use those frequencies directly
 ##    Long-Term: Port to python
 
 
-####################### TKrelated - RELATEDNESS ANALYSIS ###########################
+######################## TKrelated - RELATEDNESS ANALYSIS ###########################
 #----------------------------------------------------------------------------------#
 # Using low-coverage, forced homozygous, SNP data in the PLINK format, this        #
 # function transforms it into a SPAGEDI-ready format for relatedness estimations   #
@@ -36,14 +38,14 @@
 #											                                                             #
 # Note: SNP names in *.map files and in *.frq file must be exactly the same	       #
 
-############# Relatedness test from forced homozygote SNP data ##############
+######################## Relatedness test from forced homozygote SNP data ##############
 # --------------------------------------------------------------------------#
 relatedHomozSNP = function(sample1,sample2,freqs,run.spagedi=TRUE) {
 
   ## Arguments' description:
   ##
-  ## sample1 - name/location of plink sample 1
-  ## sample2 - name/location of plink sample 2
+  ## sample1 - name/location of text plink sample 1
+  ## sample2 - name/location of text plink sample 2
   ## freqs - name/location of the plink frequencies file from desired population
   ## run.spagedi - boolean for whether to automatically run SPAGeDI or not
   
@@ -74,17 +76,12 @@ relatedHomozSNP = function(sample1,sample2,freqs,run.spagedi=TRUE) {
   sample1_ped=data.frame(matrix(ncol=4,nrow=snps_samp1))
   sample1_ped$X1=sample1_map$V1
   sample1_ped$X2=sample1_map$V4
-  i=7
-  ter=1
-  for(allele in sample1_ped_temp$V1) {
-    while(i<=length(sample1_ped_temp$V1)) {
-      biall=paste(sample1_ped_temp[i,1],sample1_ped_temp[i+1,1])
-      sample1_ped$X3[ter]=sample1_ped_temp[i,1]
-      sample1_ped$X4[ter]=sample1_ped_temp[i+1,1]
-      ter=ter+1
-      i=i+2
-    }
-  }
+  ## Get allele information from PED file
+  sample1_ped_temp = data.frame(X1=sample1_ped_temp[7:length(sample1_ped_temp$V1),],stringsAsFactors = F)
+  alA = seq(1,length(sample1_ped_temp[,1]),by=2)
+  alB = seq(2,length(sample1_ped_temp[,1]),by=2)
+  sample1_ped$X3 = sample1_ped_temp[alA,]
+  sample1_ped$X4 = sample1_ped_temp[alB,]
   sample1_ped$X5=paste(sample1_ped$X1,"-",sample1_ped$X2,sep="")
   sample1_ped$X6=sample1_map$V2
   ## Remove SNPs with no data (due to QC during PED creation)
@@ -115,17 +112,12 @@ relatedHomozSNP = function(sample1,sample2,freqs,run.spagedi=TRUE) {
   sample2_ped=data.frame(matrix(ncol=4,nrow=snps_samp2))
   sample2_ped$X1=sample2_map$V1
   sample2_ped$X2=sample2_map$V4
-  i=7
-  ter=1
-  for(allele in sample2_ped_temp$V1) {
-    while(i<=length(sample2_ped_temp$V1)) {
-      biall=paste(sample2_ped_temp[i,1],sample2_ped_temp[i+1,1])
-      sample2_ped$X3[ter]=sample2_ped_temp[i,1]
-      sample2_ped$X4[ter]=sample2_ped_temp[i+1,1]
-      ter=ter+1
-      i=i+2
-    }
-  }
+  ## Get allele information from PED file
+  sample2_ped_temp = data.frame(X1=sample2_ped_temp[7:length(sample2_ped_temp$V1),],stringsAsFactors = F)
+  alA2 = seq(1,length(sample2_ped_temp[,1]),by=2)
+  alB2 = seq(2,length(sample2_ped_temp[,1]),by=2)
+  sample2_ped$X3 = sample2_ped_temp[alA2,]
+  sample2_ped$X4 = sample2_ped_temp[alB2,]
   sample2_ped$X5=paste(sample2_ped$X1,"-",sample2_ped$X2,sep="")
   sample2_ped$X6=sample2_map$V2
   ## Remove SNPs with no data (due to QC during PED creation)
@@ -146,25 +138,14 @@ relatedHomozSNP = function(sample1,sample2,freqs,run.spagedi=TRUE) {
 
   ##### Get common SNPs
   print("Finding common SNPs")
-  all_SNPs=c(sample1_ped$X5,sample2_ped$X5)
-  common_SNPs_logic=duplicated(all_SNPs)
-  counter=1
-  common_SNPs=data.frame(snp=as.character(),stringsAsFactors = FALSE)
-  for(i in all_SNPs) {
-    if(common_SNPs_logic[counter]==TRUE) {
-      new_row=data.frame(snp=i)
-      common_SNPs = rbind(common_SNPs,new_row)}
-    counter=counter+1
-  }
+  all_SNPs = c(sample1_ped$X5,sample2_ped$X5)
+  common_SNPs = data.frame(snp = all_SNPs[which(duplicated(all_SNPs) == TRUE)], stringsAsFactors = F)
   
   ## New data.frame with data from common SNPs
-  commonDataFrame=data.frame(chr=as.numeric(),pos=as.numeric(),snp=as.character(),S1x=as.character(),S1y=as.character(),S2x=as.character(),S2y=as.character())
-  for(i in common_SNPs$snp) {
-    posIn1=which(i==sample1_ped$X5)[1]
-    posIn2=which(i==sample2_ped$X5)[1]
-    newRow=data.frame(sample1_ped[posIn1,1],sample1_ped[posIn1,6],sample1_ped[posIn1,2],sample1_ped[posIn1,3],sample1_ped[posIn1,4],sample2_ped[posIn2,3],sample2_ped[posIn2,4])
-    commonDataFrame=rbind(commonDataFrame,newRow)
-  }
+  posIn1=which(sample1_ped$X5 %in% common_SNPs$snp)
+  posIn2=which(sample2_ped$X5 %in% common_SNPs$snp)
+  commonDataFrame = cbind(sample1_ped[posIn1,1],sample1_ped[posIn1,6],sample1_ped[posIn1,2],sample1_ped[posIn1,3],sample1_ped[posIn1,4],sample2_ped[posIn2,3],sample2_ped[posIn2,4])
+  commonDataFrame = data.frame(commonDataFrame)
   colnames(commonDataFrame) = c("chr","snp","pos","S1x","S1y","S2x","S2y")
   
   ################## Read allele frequencies
@@ -176,25 +157,15 @@ relatedHomozSNP = function(sample1,sample2,freqs,run.spagedi=TRUE) {
   alFreq[5]=lapply(alFreq[5],round,3)
   ## Add frequencies to commonDataFrame
   ## WARNING: SNP names in frequency and map files have to be an exact match
-  counter=1
-  for(i in commonDataFrame$snp) {
-    posInAlFreq=which(i==alFreq$SNP)
-    commonDataFrame$al1freq[counter]=alFreq[posInAlFreq,5]
-    commonDataFrame$al2freq[counter]=alFreq[posInAlFreq,6]
-    counter=counter+1
-  }
+  posInAlFreq = which(alFreq$SNP %in% commonDataFrame$snp)
+  commonDataFrame$al1freq=alFreq[posInAlFreq,5]
+  commonDataFrame$al2freq=alFreq[posInAlFreq,6]
   ## Remove SNPs with fixed alleles
   commonDataFrame = commonDataFrame[commonDataFrame$al1freq != 0,]
-  ## Create alFreqCommon (most time-consuming step)
-  alFreqCommon=data.frame(colClasses = c(character(),character(),character(),character(),numeric(),numeric()))
-  counter=1
-  for(i in commonDataFrame$snp) {
-    posInAlFreq=which(i==alFreq$SNP)
-    newRow=alFreq[posInAlFreq,]
-    alFreqCommon=rbind(alFreqCommon,newRow)
-    counter=counter+1
-  }
-  
+  ## Create alFreqCommon
+  posInAlFreq = which(alFreq$SNP %in% commonDataFrame$snp)
+  alFreqCommon = alFreq[posInAlFreq,]
+
   ## Export tables with common allele IDs and frequencies
   write.table(commonDataFrame$snp,paste0("common_alleles_",sample1,"_",sample2),quote = FALSE,sep="\t", row.names = FALSE, col.names = FALSE)
   alFreqCommonToExport = alFreqCommon
@@ -315,11 +286,9 @@ relatedHomozSNP = function(sample1,sample2,freqs,run.spagedi=TRUE) {
     cmd = paste0("spagedi < SP_CMDS_Test",sample1,"_",sample2,"_in.txt")
     system(cmd, ignore.stdout = TRUE, wait=TRUE)
   }
-  
 }
 
-
-##################### CybRsex- SIMULATING RELATEDNESS #############################
+######################## CybRsex- SIMULATING RELATEDNESS #############################
 #---------------------------------------------------------------------------------#
 # This script generates random sets of related and unrelated individuals based on #
 # SNP allele frequencies. These must be provided in PLINK format.		              #
@@ -501,7 +470,7 @@ unrelatedplot = function(samples.tag) {
   hist(unrelated,col = "orangered",breaks=25,xlab="Relatedness Coefficient",xlim=xlimitsFS,ylab=paste0("N=",length(unrelated)), main=paste0("Unrelated individuals for ",samples.tag))
 }
 
-############################ SET OF FULL SIBLINGS (TRC 50%) ###########################
+######################## SET OF FULL SIBLINGS (TRC 50%) ###########################
 # ------------------------------------------------------------------------- #
 fullsibsfunc = function(file,samples.tag,numFullSiblingsPairs,identifier,run.spagedi=TRUE,reduce.SNPs=FALSE) {
   
@@ -529,10 +498,7 @@ fullsibsfunc = function(file,samples.tag,numFullSiblingsPairs,identifier,run.spa
   
   if(typeof(reduce.SNPs)=="double") {
     alFrequ=alFreq[sample(1:nrow(alFreq),reduce.SNPs,replace=FALSE),]
-  }
-  else {
-    alFrequ=alFreq 
-  }
+  }  else {   alFrequ=alFreq  }
   
   ################# Swap alleles' letter by numericals
   alFrequNumericals = alFrequ
@@ -558,10 +524,10 @@ fullsibsfunc = function(file,samples.tag,numFullSiblingsPairs,identifier,run.spa
   for(i in seqIndividuals){
     nextInd=iter+1
     if(nextInd <= numIndividuals) {
-      fullSib[paste("FSIB",iter,"-",nextInd,"I_","a",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",iter,"a",sep="")])[[1]], c(alFrequ[paste("IND",nextInd,"a",sep="")])[[1]])
-      fullSib[paste("FSIB",iter,"-",nextInd,"I_","b",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",iter,"b",sep="")])[[1]], c(alFrequ[paste("IND",nextInd,"b",sep="")])[[1]])
-      fullSib[paste("FSIB",iter,"-",nextInd,"II_","a",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",iter,"a",sep="")])[[1]], c(alFrequ[paste("IND",nextInd,"a",sep="")])[[1]])
-      fullSib[paste("FSIB",iter,"-",nextInd,"II_","b",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",iter,"b",sep="")])[[1]], c(alFrequ[paste("IND",nextInd,"b",sep="")])[[1]])
+      fullSib[paste("FSIB",iter,"-",nextInd,"I_","a",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",iter,"a",sep="")])[[1]], c(alFrequ[paste("IND",iter,"b",sep="")])[[1]])
+      fullSib[paste("FSIB",iter,"-",nextInd,"I_","b",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",nextInd,"a",sep="")])[[1]], c(alFrequ[paste("IND",nextInd,"b",sep="")])[[1]])
+      fullSib[paste("FSIB",iter,"-",nextInd,"II_","a",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",iter,"a",sep="")])[[1]], c(alFrequ[paste("IND",iter,"b",sep="")])[[1]])
+      fullSib[paste("FSIB",iter,"-",nextInd,"II_","b",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",nextInd,"a",sep="")])[[1]], c(alFrequ[paste("IND",nextInd,"b",sep="")])[[1]])
     }
     iter=iter+2
   }
@@ -733,10 +699,7 @@ halfsibsfunc = function(file,samples.tag,numHalfSiblingsPairs,identifier,run.spa
   
   if(typeof(reduce.SNPs)=="double") {
     alFrequ=alFreq[sample(1:nrow(alFreq),reduce.SNPs,replace=FALSE),]
-  }
-  else {
-    alFrequ=alFreq 
-  }
+  }  else {    alFrequ=alFreq   }
   
   ################# Swap alleles' letter by numericals
   alFrequNumericals = alFrequ
@@ -763,10 +726,10 @@ halfsibsfunc = function(file,samples.tag,numHalfSiblingsPairs,identifier,run.spa
     nextInd=iter+1
     nextNextInd=nextInd+1
     if(nextInd <= numIndividuals) {
-      halfSib[paste("HSIB",iter,"-",nextInd,"I_","a",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",iter,"a",sep="")])[[1]], c(alFrequ[paste("IND",nextInd,"a",sep="")])[[1]])
-      halfSib[paste("HSIB",iter,"-",nextInd,"I_","b",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",iter,"b",sep="")])[[1]], c(alFrequ[paste("IND",nextInd,"b",sep="")])[[1]])
-      halfSib[paste("HSIB",iter,"-",nextNextInd,"II_","a",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",iter,"a",sep="")])[[1]], c(alFrequ[paste("IND",nextNextInd,"a",sep="")])[[1]])
-      halfSib[paste("HSIB",iter,"-",nextNextInd,"II_","b",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",iter,"b",sep="")])[[1]], c(alFrequ[paste("IND",nextNextInd,"b",sep="")])[[1]])
+      halfSib[paste("HSIB",iter,"-",nextInd,"I_","a",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",iter,"a",sep="")])[[1]], c(alFrequ[paste("IND",iter,"b",sep="")])[[1]])
+      halfSib[paste("HSIB",iter,"-",nextInd,"I_","b",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",nextInd,"a",sep="")])[[1]], c(alFrequ[paste("IND",nextInd,"b",sep="")])[[1]])
+      halfSib[paste("HSIB",iter,"-",nextNextInd,"II_","a",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",iter,"a",sep="")])[[1]], c(alFrequ[paste("IND",iter,"b",sep="")])[[1]])
+      halfSib[paste("HSIB",iter,"-",nextNextInd,"II_","b",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",nextNextInd,"a",sep="")])[[1]], c(alFrequ[paste("IND",nextNextInd,"b",sep="")])[[1]])
     }
     iter=iter+2
   }
@@ -939,9 +902,7 @@ threequartersibsfunc = function(file,samples.tag,num34SiblingsPairs,identifier,r
   
   if(typeof(reduce.SNPs)=="double") {
     alFrequ=alFreq[sample(1:nrow(alFreq),reduce.SNPs,replace=FALSE),]
-  }  else {
-    alFrequ=alFreq 
-  }
+  }  else {    alFrequ=alFreq   }
   
   ################# Swap alleles' letter by numericals
   alFrequNumericals = alFrequ
@@ -969,10 +930,10 @@ threequartersibsfunc = function(file,samples.tag,num34SiblingsPairs,identifier,r
   for(i in seqIndividuals){
     nextInd=iter+1
     if(nextInd <= numIndividuals) {
-      fullSib[paste("FSIB",iter,"-",nextInd,"I_","a",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",iter,"a",sep="")])[[1]], c(alFrequ[paste("IND",nextInd,"a",sep="")])[[1]])
-      fullSib[paste("FSIB",iter,"-",nextInd,"I_","b",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",iter,"b",sep="")])[[1]], c(alFrequ[paste("IND",nextInd,"b",sep="")])[[1]])
-      fullSib[paste("FSIB",iter,"-",nextInd,"II_","a",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",iter,"a",sep="")])[[1]], c(alFrequ[paste("IND",nextInd,"a",sep="")])[[1]])
-      fullSib[paste("FSIB",iter,"-",nextInd,"II_","b",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",iter,"b",sep="")])[[1]], c(alFrequ[paste("IND",nextInd,"b",sep="")])[[1]])
+      fullSib[paste("FSIB",iter,"-",nextInd,"I_","a",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",iter,"a",sep="")])[[1]], c(alFrequ[paste("IND",iter,"b",sep="")])[[1]])
+      fullSib[paste("FSIB",iter,"-",nextInd,"I_","b",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",nextInd,"a",sep="")])[[1]], c(alFrequ[paste("IND",nextInd,"b",sep="")])[[1]])
+      fullSib[paste("FSIB",iter,"-",nextInd,"II_","a",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",iter,"a",sep="")])[[1]], c(alFrequ[paste("IND",iter,"b",sep="")])[[1]])
+      fullSib[paste("FSIB",iter,"-",nextInd,"II_","b",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",nextInd,"a",sep="")])[[1]], c(alFrequ[paste("IND",nextInd,"b",sep="")])[[1]])
     }
     iter=iter+3
   }
@@ -985,10 +946,10 @@ threequartersibsfunc = function(file,samples.tag,num34SiblingsPairs,identifier,r
     nextInd = iter+1
     samePar = iter+2
     if(nextInd <= numIndividuals) {
-      threequarterSib[paste("TQSIB",iter,"-",nextInd,"I-",samePar,"_","a",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(fullSib[paste("FSIB",iter,"-",nextInd,"I_a",sep="")])[[1]], c(alFrequ[paste("IND",samePar,"a",sep="")])[[1]])
-      threequarterSib[paste("TQSIB",iter,"-",nextInd,"I-",samePar,"_","b",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(fullSib[paste("FSIB",iter,"-",nextInd,"I_b",sep="")])[[1]], c(alFrequ[paste("IND",samePar,"b",sep="")])[[1]])
-      threequarterSib[paste("TQSIB",iter,"-",nextInd,"II-",samePar,"_","a",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(fullSib[paste("FSIB",iter,"-",nextInd,"II_a",sep="")])[[1]], c(alFrequ[paste("IND",samePar,"a",sep="")])[[1]])
-      threequarterSib[paste("TQSIB",iter,"-",nextInd,"II-",samePar,"_","b",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(fullSib[paste("FSIB",iter,"-",nextInd,"II_b",sep="")])[[1]], c(alFrequ[paste("IND",samePar,"b",sep="")])[[1]])
+      threequarterSib[paste("TQSIB",iter,"-",nextInd,"I-",samePar,"_","a",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(fullSib[paste("FSIB",iter,"-",nextInd,"I_a",sep="")])[[1]], c(fullSib[paste("FSIB",iter,"-",nextInd,"I_b",sep="")])[[1]])
+      threequarterSib[paste("TQSIB",iter,"-",nextInd,"I-",samePar,"_","b",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",samePar,"a",sep="")])[[1]], c(alFrequ[paste("IND",samePar,"b",sep="")])[[1]])
+      threequarterSib[paste("TQSIB",iter,"-",nextInd,"II-",samePar,"_","a",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(fullSib[paste("FSIB",iter,"-",nextInd,"II_a",sep="")])[[1]], c(fullSib[paste("FSIB",iter,"-",nextInd,"II_b",sep="")])[[1]])
+      threequarterSib[paste("TQSIB",iter,"-",nextInd,"II-",samePar,"_","b",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",samePar,"a",sep="")])[[1]], c(alFrequ[paste("IND",samePar,"b",sep="")])[[1]])
     }
     iter = iter+3
   }
@@ -1129,7 +1090,7 @@ threequartersibsplot = function(samples.tag) {
   hist(threequartersibs,col = "orangered",breaks=25,xlab="Relatedness Coefficient",xlim=xlimitsFS,ylab=paste0("N=",length(threequartersibs)), main=paste0("First-&-Half Order for ",samples.tag))
 }
 
-######################## SET FOR FIRST COUSINS (TRC 12.5%) #######################
+######################## SET FOR FIRST COUSINS (TRC 12.5%) #####################
 # ------------------------------------------------------------------------- #
 firstcousfunc = function(file,samples.tag,numfirstcousPairs,identifier,run.spagedi=TRUE,reduce.SNPs=FALSE) {
   
@@ -1157,9 +1118,7 @@ firstcousfunc = function(file,samples.tag,numfirstcousPairs,identifier,run.spage
   
   if(typeof(reduce.SNPs)=="double") {
     alFrequ=alFreq[sample(1:nrow(alFreq),reduce.SNPs,replace=FALSE),]
-  }  else {
-    alFrequ=alFreq 
-  }
+  }  else {    alFrequ=alFreq   }
   
   ################# Swap alleles' letter by numericals
   alFrequNumericals = alFrequ
@@ -1187,10 +1146,10 @@ firstcousfunc = function(file,samples.tag,numfirstcousPairs,identifier,run.spage
   for(i in seqIndividuals){
     nextInd=iter+1
     if(nextInd <= numIndividuals) {
-      fullSib[paste("FSIB",iter,"-",nextInd,"I_","a",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",iter,"a",sep="")])[[1]], c(alFrequ[paste("IND",nextInd,"a",sep="")])[[1]])
-      fullSib[paste("FSIB",iter,"-",nextInd,"I_","b",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",iter,"b",sep="")])[[1]], c(alFrequ[paste("IND",nextInd,"b",sep="")])[[1]])
-      fullSib[paste("FSIB",iter,"-",nextInd,"II_","a",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",iter,"a",sep="")])[[1]], c(alFrequ[paste("IND",nextInd,"a",sep="")])[[1]])
-      fullSib[paste("FSIB",iter,"-",nextInd,"II_","b",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",iter,"b",sep="")])[[1]], c(alFrequ[paste("IND",nextInd,"b",sep="")])[[1]])
+      fullSib[paste("FSIB",iter,"-",nextInd,"I_","a",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",iter,"a",sep="")])[[1]], c(alFrequ[paste("IND",iter,"b",sep="")])[[1]])
+      fullSib[paste("FSIB",iter,"-",nextInd,"I_","b",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",nextInd,"a",sep="")])[[1]], c(alFrequ[paste("IND",nextInd,"b",sep="")])[[1]])
+      fullSib[paste("FSIB",iter,"-",nextInd,"II_","a",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",iter,"a",sep="")])[[1]], c(alFrequ[paste("IND",iter,"b",sep="")])[[1]])
+      fullSib[paste("FSIB",iter,"-",nextInd,"II_","b",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",nextInd,"a",sep="")])[[1]], c(alFrequ[paste("IND",nextInd,"b",sep="")])[[1]])
     }
     iter=iter+4
   }
@@ -1204,10 +1163,10 @@ firstcousfunc = function(file,samples.tag,numfirstcousPairs,identifier,run.spage
     parOne = iter+2
     parTwo = iter+3
     if(nextInd <= numIndividuals) {
-      firstCous[paste("FCOU",iter,"-",nextInd,"I-",parOne,"_","a",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(fullSib[paste("FSIB",iter,"-",nextInd,"I_a",sep="")])[[1]], c(alFrequ[paste("IND",parOne,"a",sep="")])[[1]])
-      firstCous[paste("FCOU",iter,"-",nextInd,"I-",parOne,"_","b",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(fullSib[paste("FSIB",iter,"-",nextInd,"I_b",sep="")])[[1]], c(alFrequ[paste("IND",parOne,"b",sep="")])[[1]])
-      firstCous[paste("FCOU",iter,"-",nextInd,"II-",parTwo,"_","a",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(fullSib[paste("FSIB",iter,"-",nextInd,"II_a",sep="")])[[1]], c(alFrequ[paste("IND",parTwo,"a",sep="")])[[1]])
-      firstCous[paste("FCOU",iter,"-",nextInd,"II-",parTwo,"_","b",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(fullSib[paste("FSIB",iter,"-",nextInd,"II_b",sep="")])[[1]], c(alFrequ[paste("IND",parTwo,"b",sep="")])[[1]])
+      firstCous[paste("FCOU",iter,"-",nextInd,"I-",parOne,"_","a",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(fullSib[paste("FSIB",iter,"-",nextInd,"I_a",sep="")])[[1]], c(fullSib[paste("FSIB",iter,"-",nextInd,"I_b",sep="")])[[1]])
+      firstCous[paste("FCOU",iter,"-",nextInd,"I-",parOne,"_","b",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",parOne,"a",sep="")])[[1]], c(alFrequ[paste("IND",parOne,"b",sep="")])[[1]])
+      firstCous[paste("FCOU",iter,"-",nextInd,"II-",parTwo,"_","a",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(fullSib[paste("FSIB",iter,"-",nextInd,"II_a",sep="")])[[1]], c(fullSib[paste("FSIB",iter,"-",nextInd,"II_b",sep="")])[[1]])
+      firstCous[paste("FCOU",iter,"-",nextInd,"II-",parTwo,"_","b",sep="")] = ifelse(runif(length(alFrequ$SNP),0.00,1.00) < 0.5, c(alFrequ[paste("IND",parTwo,"a",sep="")])[[1]], c(alFrequ[paste("IND",parTwo,"b",sep="")])[[1]])
     }
     iter = iter+4
   }
@@ -1349,6 +1308,7 @@ firstcousplot = function(samples.tag) {
   hist(firstcous,col = "orangered",breaks=25,xlab="Relatedness Coefficient",xlim=xlimitsFS,ylab=paste0("N=",length(firstcous)), main=paste0("First-&-Half Order for ",samples.tag))
 }
 
+######################## REAL ALL ESTIMATIONS ###################
 ########### Function to read all outputs from SPAGeDI and plot them according to provided samples.tag
 readAll = function(samples.tag,plot.out=TRUE,stats.out=TRUE,pdf.w=25,pdf.h=15,pdf.cex=30) {
 
@@ -1363,7 +1323,7 @@ readAll = function(samples.tag,plot.out=TRUE,stats.out=TRUE,pdf.w=25,pdf.h=15,pd
   
   library(plotrix)
   
-  ## Read in the three relatedness simulations
+  ## Read in the five relatedness simulations
   histoUN = read.table(paste0("histoUN_",samples.tag,"Distances_Final"))  
   histoHS = read.table(paste0("histoHS_",samples.tag,"Distances_Final"))  
   histoFS = read.table(paste0("histoFS_",samples.tag,"Distances_Final"))
@@ -1403,15 +1363,40 @@ readAll = function(samples.tag,plot.out=TRUE,stats.out=TRUE,pdf.w=25,pdf.h=15,pd
   text(coefficientRelatedness, -par("usr")[4]/50, paste0("r=",format(coefficientRelatedness,digits = 3)))
   
   ## Calculate posterior probabilities
-  #Here
-  #Here
-  #Here
-  #if(stats.out==TRUE) { write.table(postProbTbl,file=paste0("PosteriorProbs_",samples.tag),quote=FALSE,sep="\t",row.names=FALSE,col.names=FALSE)}
+  normal.likelihood <- function(params,x){
+    mu <- params[1]
+    var <- params[2]
+    logl <- -0.5*log(var) - (1/(2*var)) * ((x-mu)**2)
+    return(logl)
+  }
+  paramsUN <- c((sum(as.numeric(histoUN$V1))/length(as.numeric(histoUN$V1))),((length(as.numeric(histoUN$V1))-1)/length(as.numeric(histoUN$V1)))*(sd(as.numeric(histoUN$V1))**2))
+  paramsFC <- c((sum(as.numeric(histoFC$V1))/length(as.numeric(histoFC$V1))),((length(as.numeric(histoFC$V1))-1)/length(as.numeric(histoFC$V1)))*(sd(as.numeric(histoFC$V1))**2))
+  paramsHS <- c((sum(as.numeric(histoHS$V1))/length(as.numeric(histoHS$V1))),((length(as.numeric(histoHS$V1))-1)/length(as.numeric(histoHS$V1)))*(sd(as.numeric(histoHS$V1))**2))
+  paramsTQ <- c((sum(as.numeric(histoTQ$V1))/length(as.numeric(histoTQ$V1))),((length(as.numeric(histoTQ$V1))-1)/length(as.numeric(histoTQ$V1)))*(sd(as.numeric(histoTQ$V1))**2))
+  paramsFS <- c((sum(as.numeric(histoFS$V1))/length(as.numeric(histoFS$V1))),((length(as.numeric(histoFS$V1))-1)/length(as.numeric(histoFS$V1)))*(sd(as.numeric(histoFS$V1))**2))
+  UNnl = normal.likelihood(paramsUN,coefficientRelatedness)
+  FCnl = normal.likelihood(paramsFC,coefficientRelatedness)
+  HSnl = normal.likelihood(paramsHS,coefficientRelatedness)
+  TQnl = normal.likelihood(paramsTQ,coefficientRelatedness)
+  FSnl = normal.likelihood(paramsFS,coefficientRelatedness)
 
+  log.like = c(UNnl,FCnl,HSnl,TQnl,FSnl)
+  likelihoods = exp(log.like)
+  post.probs = sprintf("%.3f",(as.numeric(likelihoods/(sum(likelihoods)))),3)
+  
   ## Add posterior probabilities to plot
-  #Here
-  #Here
-  #Here
+  text(median(histoUN$V1),(round(par("usr")[4])/4),labels = post.probs[1],col="white")
+  text(median(histoFC$V1),(round(par("usr")[4])/4),labels = post.probs[2],col="white")
+  text(median(histoHS$V1),(round(par("usr")[4])/4),labels = post.probs[3],col="white")
+  text(median(histoTQ$V1),(round(par("usr")[4])/4),labels = post.probs[4],col="white")
+  text(median(histoFS$V1),(round(par("usr")[4])/4),labels = post.probs[5],col="white")
+  
+  ## Export probabilities to text file
+  if(stats.out==TRUE) {
+    postProbTbl = data.frame(c("Unrelated","Third Order","Second Order","3/4 Siblings","First Order"),post.probs)
+    colnames(postProbTbl) = c("Relationship","Posterior Probability")
+    write.table(postProbTbl,file=paste0("PosteriorProbs_",samples.tag),quote=FALSE,sep="\t",row.names=FALSE)
+  }
   
   if(plot.out==TRUE) {
     dev.off()
@@ -1419,55 +1404,55 @@ readAll = function(samples.tag,plot.out=TRUE,stats.out=TRUE,pdf.w=25,pdf.h=15,pd
   
 }
 
-
+######################## EXAMPLE OF USAGE #####################
 
 ## Example of usage:
 ## 1000 simulations for each order 
 ## (divided by 5 iterations for time efficiency)
 
-### Set working directory
-setwd("foo/bar")
-### Run relatedness test for "ind1" and "ind2"
-relatedHomozSNP("ind1","ind2","my_freqs.frq",run.spagedi = TRUE)
-### Generate unrelated individuals and simulate relatedness
-unrelatedfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,1,run.spagedi = TRUE)
-unrelatedfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,2,run.spagedi = TRUE)
-unrelatedfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,3,run.spagedi = TRUE)
-unrelatedfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,4,run.spagedi = TRUE)
-unrelatedfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,5,run.spagedi = TRUE)
-### Use the plot function to compile the 5 individual runs and export it to be used on readAll
-unrelatedplot("ind1_ind2")
-### ### Generate first order relatives and simulate relatedness
-fullsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,1,run.spagedi = TRUE)
-fullsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,2,run.spagedi = TRUE)
-fullsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,3,run.spagedi = TRUE)
-fullsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,4,run.spagedi = TRUE)
-fullsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,5,run.spagedi = TRUE)
-### Use the plot function to compile the 5 individual runs and export it to be used on readAll
-fullsibsplot("ind1_ind2")
-### ### ### Generate second order relatives and simulate relatedness
-halfsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,1,run.spagedi = TRUE)
-halfsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,2,run.spagedi = TRUE)
-halfsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,3,run.spagedi = TRUE)
-halfsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,4,run.spagedi = TRUE)
-halfsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,5,run.spagedi = TRUE)
-### Use the plot function to compile the 5 individual runs and export it to be used on readAll
-halfsibsplot("ind1_ind2")
-### ### ### Generate 1.5 order relatives and simulate relatedness
-threequartersibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,1,run.spagedi = TRUE)
-threequartersibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,2,run.spagedi = TRUE)
-threequartersibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,3,run.spagedi = TRUE)
-threequartersibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,4,run.spagedi = TRUE)
-threequartersibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,5,run.spagedi = TRUE)
-### Use the plot function to compile the 5 individual runs and export it to be used on readAll
-threequartersibsplot("ind1_ind2")
-### ### ### Generate third order relatives and simulate relatedness
-firstcousfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,1,run.spagedi = TRUE)
-firstcousfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,2,run.spagedi = TRUE)
-firstcousfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,3,run.spagedi = TRUE)
-firstcousfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,4,run.spagedi = TRUE)
-firstcousfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,5,run.spagedi = TRUE)
-### Use the plot function to compile the 5 individual runs and export it to be used on readAll
-firstcousplot("ind1_ind2")
-### Collect data from the 5 different orders and plot them together
-readAll("ind1_ind2")
+# ## Set working directory
+# setwd("foo/bar")
+# ## Run relatedness test for "ind1" and "ind2"
+# relatedHomozSNP("ind1","ind2","my_freqs.frq",run.spagedi = TRUE)
+# ## Generate unrelated individuals and simulate relatedness
+# unrelatedfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,1,run.spagedi = TRUE)
+# unrelatedfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,2,run.spagedi = TRUE)
+# unrelatedfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,3,run.spagedi = TRUE)
+# unrelatedfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,4,run.spagedi = TRUE)
+# unrelatedfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,5,run.spagedi = TRUE)
+# ## Use the plot function to compile the 5 individual runs and export it to be used on readAll
+# unrelatedplot("ind1_ind2")
+# ## ### Generate first order relatives and simulate relatedness
+# fullsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,1,run.spagedi = TRUE)
+# fullsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,2,run.spagedi = TRUE)
+# fullsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,3,run.spagedi = TRUE)
+# fullsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,4,run.spagedi = TRUE)
+# fullsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,5,run.spagedi = TRUE)
+# ## Use the plot function to compile the 5 individual runs and export it to be used on readAll
+# fullsibsplot("ind1_ind2")
+# ## ### ### Generate second order relatives and simulate relatedness
+# halfsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,1,run.spagedi = TRUE)
+# halfsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,2,run.spagedi = TRUE)
+# halfsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,3,run.spagedi = TRUE)
+# halfsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,4,run.spagedi = TRUE)
+# halfsibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,5,run.spagedi = TRUE)
+# ## Use the plot function to compile the 5 individual runs and export it to be used on readAll
+# halfsibsplot("ind1_ind2")
+# ## ### ### Generate 1.5 order relatives and simulate relatedness
+# threequartersibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,1,run.spagedi = TRUE)
+# threequartersibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,2,run.spagedi = TRUE)
+# threequartersibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,3,run.spagedi = TRUE)
+# threequartersibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,4,run.spagedi = TRUE)
+# threequartersibsfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,5,run.spagedi = TRUE)
+# ## Use the plot function to compile the 5 individual runs and export it to be used on readAll
+# threequartersibsplot("ind1_ind2")
+# ## ### ### Generate third order relatives and simulate relatedness
+# firstcousfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,1,run.spagedi = TRUE)
+# firstcousfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,2,run.spagedi = TRUE)
+# firstcousfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,3,run.spagedi = TRUE)
+# firstcousfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,4,run.spagedi = TRUE)
+# firstcousfunc("commons_freqs_ind1_ind2.frq","ind1_ind2",200,5,run.spagedi = TRUE)
+# ## Use the plot function to compile the 5 individual runs and export it to be used on readAll
+# firstcousplot("ind1_ind2")
+# ## Collect data from the 5 different orders and plot them together
+# readAll("ind1_ind2")
