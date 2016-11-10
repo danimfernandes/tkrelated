@@ -1329,7 +1329,7 @@ readAll = function(samples.tag,plot.out=TRUE,stats.out=TRUE,pdf.w=25,pdf.h=15,pd
   histoTQ = read.table(paste0("histoTQ_",samples.tag,"Distances_Final"))
   histoFC = read.table(paste0("histoFC_",samples.tag,"Distances_Final"))
   
-  n_size = length(histoUN$V1)+length(histoHS$V1)+length(histoFS$V1)
+  n_size = length(histoUN$V1)+length(histoHS$V1)+length(histoFS$V1)+length(histoFC$V1)+length(histoTQ$V1)
   x_lims = c(min(c(histoHS$V1,histoFS$V1,histoUN$V1)-0.05),max(c(histoHS$V1,histoFS$V1,histoUN$V1)+0.05))
   
   ## Read in the relatedness coefficient for this pair of samples
