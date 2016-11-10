@@ -1,3 +1,9 @@
+v.1.6 (10 Nov 2016)
+* Added posterior probabilities
+* Multiple speed improvements on "relatedHomozSNP" function (up to 24X faster)
+* Fixed bug for "reduce.SNPs"=FALSE
+* Fixed bug due to presence of fixed alleles
+
 v.1.4 (28 Oct 2016)
 * Added three/quarter-sibling simulations
 * Added third order simulations
