@@ -24,10 +24,10 @@ This R script is composed by different functions that can be used to:
 
 1. estimate relatedness from *in silico* generated, and plot histograms for,
   * a) unrelated individuals (Queller and Goodnight's Rxy coefficient of relationship = 0%)
-  * b) full siblings (Queller and Goodnight's Rxy coefficient of relationship = 50%)
+  * b) first order (Queller and Goodnight's Rxy coefficient of relationship = 50%)
   * c) 3/4 siblings (Queller and Goodnight's Rxy coefficient of relationship = 37.5%)
-  * d) half siblings (Queller and Goodnight's Rxy coefficient of relationship = 25%)
-  * e) first cousins (Queller and Goodnight's Rxy coefficient of relationship = 12.5%)
+  * d) second order (Queller and Goodnight's Rxy coefficient of relationship = 25%)
+  * e) third order (Queller and Goodnight's Rxy coefficient of relationship = 12.5%)
 
 The main advantage of this script is the requirement of low amounts of genetic data for accurate estimations. This is possible due to the application of a "forced homozygous" approach, and has been shown to work with as few as 1400 common SNPs. It can be used for both forensic or archaeological applications, where reduced DNA amounts are frequently an issue. More information on the paper where this method was first applied: [doi:10.1101/076992 ](http://dx.doi.org/10.1101/076992)
 ***
