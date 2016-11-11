@@ -713,7 +713,7 @@ halfsibsfunc = function(file,samples.tag,numHalfSiblingsPairs,identifier,run.spa
   
   ################# Generate individual+allele columns PLUS choose allele according to RANDOM value
   print("Generating virtual individuals based on allele frequencies")
-  numIndividuals = numHalfSiblingsPairs*3 
+  numIndividuals = numHalfSiblingsPairs*2 
   numIndividuals = numIndividuals + 1 ##Correcting for permutations
   seqIndividuals = seq(1:numIndividuals)
   for(i in seqIndividuals) {
