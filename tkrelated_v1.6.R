@@ -339,6 +339,7 @@ unrelatedfunc = function(file,samples.tag,numUnrelatedPairs,identifier,run.spage
   alFrequ=alFrequNumericals
   
   ################# Generate individual+allele columns PLUS choose allele according to RANDOM value
+  print("Generating virtual individuals based on allele frequencies")
   numIndividuals = numUnrelatedPairs*2
   seqIndividuals = seq(1:numIndividuals)
   alFrequ=alFrequNumericals
@@ -509,6 +510,7 @@ fullsibsfunc = function(file,samples.tag,numFullSiblingsPairs,identifier,run.spa
   alFrequ=alFrequNumericals
   
   ################# Generate individual+allele columns PLUS choose allele according to RANDOM value
+  print("Generating virtual individuals based on allele frequencies")
   numIndividuals = numFullSiblingsPairs*2 
   seqIndividuals = seq(1:numIndividuals)
   alFrequ=alFrequNumericals
@@ -710,6 +712,7 @@ halfsibsfunc = function(file,samples.tag,numHalfSiblingsPairs,identifier,run.spa
   alFrequ=alFrequNumericals
   
   ################# Generate individual+allele columns PLUS choose allele according to RANDOM value
+  print("Generating virtual individuals based on allele frequencies")
   numIndividuals = numHalfSiblingsPairs*3 
   numIndividuals = numIndividuals + 1 ##Correcting for permutations
   seqIndividuals = seq(1:numIndividuals)
