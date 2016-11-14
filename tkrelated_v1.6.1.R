@@ -1335,10 +1335,12 @@ readAll = function(samples.tag,plot.out=TRUE,stats.out=TRUE,pdf.w=25,pdf.h=15,pd
   n_size = length(histoUN$V1)+length(histoHS$V1)+length(histoFS$V1)+length(histoFC$V1)+length(histoTQ$V1)
   x_lims = c(min(c(histoHS$V1,histoFS$V1,histoUN$V1)-0.05),max(c(histoHS$V1,histoFS$V1,histoUN$V1)+0.05))
   
-  ## Read in the relatedness coefficient for this pair of samples
-  fileIn = read.csv(paste0(samples.tag,"_spagedi_out.txt"))
+  ## Read in the relatedness coefficient for this pair of samples and number of SNPs used
+  fileIn = read.csv(paste0(samples.tag,"_spagedi_out.txt"),stringsAsFactors = F)
   coeff = which("PAIRWISE SPATIAL AND GENETIC DISTANCES written in column form" == fileIn)+3
   coefficientRelatedness = as.numeric(tail(strsplit(as.character(fileIn[coeff,]),"\t")[[1]], n=1))
+  snps = grep("loci:",fileIn[,1])
+  commsnps = as.numeric(strsplit(fileIn[snps,1],"loci:")[[1]][1])
   
   ## Plot multiple histogram
   if(plot.out==TRUE) {
@@ -1395,9 +1397,12 @@ readAll = function(samples.tag,plot.out=TRUE,stats.out=TRUE,pdf.w=25,pdf.h=15,pd
   
   ## Export probabilities to text file
   if(stats.out==TRUE) {
-    postProbTbl = data.frame(c("Unrelated","Third Order","Second Order","3/4 Siblings","First Order"),post.probs)
-    colnames(postProbTbl) = c("Relationship","Posterior Probability")
-    write.table(postProbTbl,file=paste0("PosteriorProbs_",samples.tag),quote=FALSE,sep="\t",row.names=FALSE)
+    tblUp = data.frame(c(samples.tag,"SNPs","Homozygous relatedness coefficient",""),c("",commsnps,coefficientRelatedness,""))
+    postProbTbl = data.frame(c("Relationship","Unrelated","Third Order","Second Order","3/4 Siblings","First Order"),c("Posterior Probability",post.probs))
+    colnames(tblUp) = c("A1","B1")
+    colnames(postProbTbl) = c("A1","B1")
+    merged = rbind(tblUp,postProbTbl)
+    write.table(merged,file=paste0("AAAAAAAAAAAAPosteriorProbs_",samples.tag),quote=FALSE,sep="\t",row.names=F,col.names = F)
   }
   
   if(plot.out==TRUE) {
