@@ -1402,7 +1402,7 @@ readAll = function(samples.tag,plot.out=TRUE,stats.out=TRUE,pdf.w=25,pdf.h=15,pd
     colnames(tblUp) = c("A1","B1")
     colnames(postProbTbl) = c("A1","B1")
     merged = rbind(tblUp,postProbTbl)
-    write.table(merged,file=paste0("AAAAAAAAAAAAPosteriorProbs_",samples.tag),quote=FALSE,sep="\t",row.names=F,col.names = F)
+    write.table(merged,file=paste0("PosteriorProbs_",samples.tag),quote=FALSE,sep="\t",row.names=F,col.names = F)
   }
   
   if(plot.out==TRUE) {
