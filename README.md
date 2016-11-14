@@ -51,7 +51,7 @@ The main advantage of this script is the requirement of low amounts of genetic d
 TKrelated requires individual data and allele frequencies both in non-binary PLINK format (.ped/.map and .frq). Each PED file can only contain one individual.
 More detailed input requirements and formats are described within the script.
 
-####Example (v1.6):
+####Example (v1.6.1):
 ####Estimating relatedness on two given samples
 We suggest using this script by sourcing it into your current R session environment. All functions will then be available to the user:
 
@@ -156,7 +156,7 @@ Below is a suggested set of commands to run the simulations, taking into conside
 
 This will generate estimations for 1000 unrelated, 1000 first order, 1000 3/4 siblings, 1000 second order, and 1000 third order virtual individuals, in batches of 200. This way the script and SPAGeDI run faster and should not crash. It, however, is dependant on the amount of RAM available.
 
-The **readAll** function will recognize the data from the five different orders and use it to calculate the posterior probabilities of each of the orders for the given relatedness coefficient. Default options output a plot and a tab-spaced text file with the posterior probabilities. Note that this function requires the previous five plot functions to have run.
+The **readAll** function will recognize the data from the five different orders and use it to calculate the posterior probabilities of each of the orders for the given relatedness coefficient. Default options output a plot and a tab-spaced text file with the posterior probabilities, number of SNPs used, and homozygous relatedness coefficient. Note that this function requires the previous five plot functions to have run.
 
 ***
 
