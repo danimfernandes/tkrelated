@@ -51,7 +51,7 @@ The main advantage of this script is the requirement of low amounts of genetic d
 TKrelated requires individual data and allele frequencies both in non-binary PLINK format (.ped/.map and .frq). Each PED file can only contain one individual.
 More detailed input requirements and formats are described within the script.
 
-####Example (v1.6.1):
+####Example (v1.6.2):
 ####Estimating relatedness on two given samples
 We suggest using this script by sourcing it into your current R session environment. All functions will then be available to the user:
 
