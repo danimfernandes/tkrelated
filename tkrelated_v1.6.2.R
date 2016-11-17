@@ -66,10 +66,6 @@ relatedHomozSNP = function(sample1,sample2,freqs,run.spagedi=TRUE) {
   ####### Sample1
   print(paste0("Reading sample 1: ",sample1))
   sample1_ped_temp=read.tcsv(paste0(sample1,".ped"),as.is=TRUE,header=FALSE,stringsAsFactors = FALSE,sep=" ")
-  
-  #######IMPORTANT - This next line is not always needed. If you get an error about end of line while reading tcsv, add a line in a text editor to the PED file and then use this to remove it.
-  #sample1_ped_temp = head(sample1_ped_temp,-1)
-  
   sample1_map=read.csv(paste0(sample1,".map"),sep="",stringsAsFactors = FALSE,header=FALSE)
   snps_samp1=length(sample1_map$V1)
   sample1_ped=data.frame(matrix(ncol=4,nrow=snps_samp1))
@@ -77,6 +73,7 @@ relatedHomozSNP = function(sample1,sample2,freqs,run.spagedi=TRUE) {
   sample1_ped$X2=sample1_map$V4
   ## Get allele information from PED file
   sample1_ped_temp = data.frame(X1=sample1_ped_temp[7:length(sample1_ped_temp$V1),],stringsAsFactors = F)
+  if((length(sample1_ped_temp$X1) > length(sample1_ped$X1)*2) == TRUE) { sample1_ped_temp = data.frame(X1=sample1_ped_temp[-nrow(sample1_ped_temp),],stringsAsFactors = F)}
   alA = seq(1,length(sample1_ped_temp[,1]),by=2)
   alB = seq(2,length(sample1_ped_temp[,1]),by=2)
   sample1_ped$X3 = sample1_ped_temp[alA,]
@@ -102,10 +99,6 @@ relatedHomozSNP = function(sample1,sample2,freqs,run.spagedi=TRUE) {
   ####### Sample 2
   print(paste0("Reading sample 2: ",sample2))
   sample2_ped_temp=read.tcsv(paste0(sample2,".ped"),as.is=TRUE,header=FALSE,stringsAsFactors = FALSE,sep=" ")
-  
-  #######IMPORTANT - This next line is not always needed. If you get an error about end of line while reading tcsv, add a line in a text editor to the PED file and then use this to remove it.
-  #sample2_ped_temp = head(sample2_ped_temp,-1)
-  
   sample2_map=read.csv(paste0(sample2,".map"),sep="",stringsAsFactors = FALSE,header=FALSE)
   snps_samp2=length(sample2_map$V1)
   sample2_ped=data.frame(matrix(ncol=4,nrow=snps_samp2))
@@ -113,6 +106,7 @@ relatedHomozSNP = function(sample1,sample2,freqs,run.spagedi=TRUE) {
   sample2_ped$X2=sample2_map$V4
   ## Get allele information from PED file
   sample2_ped_temp = data.frame(X1=sample2_ped_temp[7:length(sample2_ped_temp$V1),],stringsAsFactors = F)
+  if((length(sample2_ped_temp$X1) > length(sample2_ped$X1)*2) == TRUE) { sample2_ped_temp = data.frame(X1=sample2_ped_temp[-nrow(sample2_ped_temp),],stringsAsFactors = F)}
   alA2 = seq(1,length(sample2_ped_temp[,1]),by=2)
   alB2 = seq(2,length(sample2_ped_temp[,1]),by=2)
   sample2_ped$X3 = sample2_ped_temp[alA2,]
