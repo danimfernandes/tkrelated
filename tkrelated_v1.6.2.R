@@ -1,6 +1,6 @@
 ## TKrelated & CybRsex
-## v.1.6
-## 10 November 2016
+## v.1.6.2
+## 17 November 2016
 
 ## Maintained by: Daniel Fernandes - dani.mag.fernandes@gmail.com
 ## Written by Daniel Fernandes (main body, simulations) and John Finarelli (posterior probabilities)
@@ -11,10 +11,7 @@
 ## http://dx.doi.org/10.1101/076992
 
 ##CHANGELOG:
-##    Added posterior probabilities
-##    Multiple speed improvements on "relatedHomozSNP" function (up to 24X faster)
-##    Fixed bug for "reduce.SNPs"=FALSE
-##    Fixed bug due to presence of fixed alleles
+##    Fixed bug due to absence of EOL marker at the end of PED file
 
 ##TODO:
 ##    Long-Term: Port to python
