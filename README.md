@@ -14,9 +14,7 @@ Copyright (c) Daniel Fernandes - dani.mag.fernandes@gmail.com
 ***
 
 ###Citation
-Fernandes DM, Sirak K, Novak M, Finarelli J, Byrne J, Connolly E, Carlsson J, Ferretti E, Pinhasi R, Carlsson J. 2017.
-The Identification of a 1916 Irish Rebel: New Approach for Estimating Relatedness From Low Coverage Homozygous Genomes.
-Scientific Reports 7, 41529
+Fernandes D, Sirak K, Novak M, Finarelli J, Byrne J, Connolly E, Carlsson J, Ferretti E, Pinhasi R, Carlsson J. The Identification of a 1916 Irish Rebel: New Approach for Estimating Relatedness From Low Coverage Homozygous Genomes. Sci. Rep. 7, 41529; doi: 10.1038/srep41529 (2017)
 ***
 
 ###Description
