@@ -14,9 +14,9 @@ Copyright (c) Daniel Fernandes - dani.mag.fernandes@gmail.com
 ***
 
 ###Citation
-Fernandes DM, Sirak K, Novak M, Finarelli J, Byrne J, Connolly E, Carlsson J, Ferretti E, Pinhasi R, Carlsson J. 2016.
+Fernandes DM, Sirak K, Novak M, Finarelli J, Byrne J, Connolly E, Carlsson J, Ferretti E, Pinhasi R, Carlsson J. 2017.
 The Identification of a 1916 Irish Rebel: New Approach for Estimating Relatedness From Low Coverage Homozygous Genomes.
-bioRxiv doi:10.1101/076992
+Scientific Reports 7, 41529, doi:10.1038/srep41529
 ***
 
 ###Description
@@ -29,7 +29,7 @@ This R script is composed by different functions that can be used to:
   * d) second order (Queller and Goodnight's Rxy coefficient of relationship = 25%)
   * e) third order (Queller and Goodnight's Rxy coefficient of relationship = 12.5%)
 
-The main advantage of this script is the requirement of low amounts of genetic data for accurate estimations. This is possible due to the application of a "forced homozygous" approach, and has been shown to work with as few as 1400 common SNPs. It can be used for both forensic or archaeological applications, where reduced DNA amounts are frequently an issue. More information on the paper where this method was first applied: [doi:10.1101/076992 ](http://dx.doi.org/10.1101/076992)
+The main advantage of this script is the requirement of low amounts of genetic data for accurate estimations. This is possible due to the application of a "forced homozygous" approach, and has been shown to work with as few as 1400 common SNPs. It can be used for both forensic or archaeological applications, where reduced DNA amounts are frequently an issue. More information on the paper where this method was first applied: [http://www.nature.com/articles/srep41529 ](http://www.nature.com/articles/srep41529)
 ***
 
 ###Third-Party Software Requirements
