@@ -54,6 +54,7 @@ TKrelated requires individual data and allele frequencies both in non-binary PLI
 More detailed input requirements and formats are described within the script.
 
 ####Example (v1.6.2):
+
 ####Estimating relatedness on two given samples
 We suggest using this script by sourcing it into your current R session environment. All functions will then be available to the user:
 
