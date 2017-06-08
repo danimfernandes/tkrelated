@@ -53,9 +53,7 @@ The current version can not estimate probabilities when the used number of commo
 TKrelated requires individual data and allele frequencies both in non-binary PLINK format (.ped/.map and .frq). Each PED file can only contain one individual.
 More detailed input requirements and formats are described within the script.
 
-####Example (v1.6.2):
-
-####Estimating relatedness on two given samples
+####Example (v1.6.2) - Estimating relatedness on two given samples
 We suggest using this script by sourcing it into your current R session environment. All functions will then be available to the user:
 
     source("/path/to/script/TKrelated_vx.x.x.R")
