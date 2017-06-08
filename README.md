@@ -28,6 +28,10 @@ This R script is composed by different functions that can be used to:
   * e) third order (Queller and Goodnight's Rxy coefficient of relationship = 12.5%)
 
 The main advantage of this script is the requirement of low amounts of genetic data for accurate estimations. This is possible due to the application of a "forced homozygous" approach, and has been shown to work with as few as 1400 common SNPs. It can be used for both forensic or archaeological applications, where reduced DNA amounts are frequently an issue. More information on the paper where this method was first applied: [http://www.nature.com/articles/srep41529 ](http://www.nature.com/articles/srep41529)
+
+DISCLAIMER & WORKING NOTES: This software is supplied without any warranty or guaranteed support. The authors can not be responsible for its use or misuse.
+Please be aware of the inherent existence of false-positive, and false-negative, results. This behaviour can be expected to happen with higher frequencies on Third Order estimations, due to reduced coefficient separations between this order and others, namely the Unrelated one.
+The current version can not estimate probabilities when the used number of common SNPs is too high. This is due to an increased influence of population structure and the inability of the estimator to correct for it using haploid data. 
 ***
 
 ###Third-Party Software Requirements
